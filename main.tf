@@ -10,7 +10,7 @@ terraform {
     }
   }
 
-  required_version = "1.3.5"
+  required_version = "1.3.7"
 }
 
 provider "aws" {
@@ -197,7 +197,8 @@ resource "aws_instance" "tfe" {
   iam_instance_profile   = aws_iam_instance_profile.tfe_profile.name
 
   user_data = templatefile("${path.module}/scripts/cloud-init.tpl", {
-    region               = var.region
+    region              = var.region
+    environment_name    = var.environment_name
     enc_password        = var.tfe_encryption_password,
     replicated_password = var.replicated_password,
     admin_username      = var.admin_username,
@@ -205,9 +206,10 @@ resource "aws_instance" "tfe" {
     admin_password      = var.admin_password
     pg_password         = var.postgresql_password
     fqdn                = local.fqdn
+    s3tfe               = aws_s3_bucket.tfe.bucket
     s3files             = aws_s3_bucket.tfe_files.bucket
     pg_netloc           = aws_db_instance.tfe.endpoint
-    airgap_file         = var.airgap_file
+    release_sequence    = var.release_sequence
   })
 
   root_block_device {
@@ -222,7 +224,6 @@ resource "aws_instance" "tfe" {
     aws_s3_bucket.tfe,
     aws_s3_bucket.tfe_files,
     aws_s3_object.replicated_license,
-    aws_s3_object.replicated_airgap,
     aws_s3_object.certificate,
     aws_s3_object.private_key,
     aws_db_instance.tfe
@@ -315,13 +316,6 @@ resource "aws_s3_object" "replicated_license" {
   bucket = aws_s3_bucket.tfe_files.bucket
   key    = "license.rli"
   source = "config/license.rli"
-}
-
-# upload airgap file to s3 filesbucket
-resource "aws_s3_object" "replicated_airgap" {
-  bucket = aws_s3_bucket.tfe_files.bucket
-  key    = var.airgap_file
-  source = "files/${var.airgap_file}"
 }
 
 # upload certificate file to s3 filesbucket

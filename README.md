@@ -86,6 +86,7 @@ tfe_login = "https://tfe-airgap-paul.tf-support.hashicorpdemo.com"
 - Click on the open button to go to TFE of go to the `tfe_login` url.  
 
 # TODO
+- [] Fix docs for online instead of airgapped
 
 # DONE
 - [x] Create manually
