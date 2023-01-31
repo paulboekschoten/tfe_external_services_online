@@ -25,8 +25,7 @@ write_files:
         "TlsBootstrapKey":              "/tmp/tfe_server.key",
         "BypassPreflightChecks":        true,
         "ImportSettingsFrom":           "/etc/settings.json",
-        "LicenseFileLocation":          "/tmp/license.rli",
-        "LicenseBootstrapAirgapPackagePath": "/tmp/${airgap_file}"
+        "LicenseFileLocation":          "/tmp/license.rli"
       }
   - path: "/etc/settings.json"
     permissions: "0755"
@@ -43,7 +42,7 @@ write_files:
            "value": "1"
         },
         "s3_bucket": {
-            "value": "${s3files}"
+            "value": "${s3tfe}"
         },
         "s3_region": {
             "value": "${region}"
@@ -85,13 +84,11 @@ write_files:
     content: |
       #!/bin/bash -eux
       private_ip=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+      public_ip=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 
-      mkdir -p /tmp/replicated_installer
-      curl -sL https://install.terraform.io/airgap/latest.tar.gz > /tmp/replicated_installer.tar.gz
-      tar xzf /tmp/replicated_installer.tar.gz -C /tmp/replicated_installer
-      cd /tmp/replicated_installer
-      bash ./install.sh airgap private-address=$private_ip
-
+      curl -sL https://install.terraform.io/ptfe/stable > /tmp/install.sh
+      bash /tmp/install.sh release-sequence=${release_sequence} no-proxy private-address=$private_ip public-address=$public_ip
+      
       while ! curl -kLsfS --connect-timeout 5 https://${fqdn}/_health_check &>/dev/null ; do
         echo "INFO: TFE has not been yet fully started"
         echo "INFO: sleeping 60 seconds"
@@ -111,16 +108,11 @@ write_files:
         --data @/etc/tfe_initial_user.json \
         https://${fqdn}/admin/initial-admin-user?token=$initial_token | tee /etc/tfe_initial_user_token.json
 runcmd: 
-  - sudo mkdir -p /etc/apt/keyrings 
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
   - sudo apt-get -y update
-  - sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin
   - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
   - unzip /tmp/awscliv2.zip -d /tmp/
   - sudo /tmp/aws/install
-  - aws s3 cp s3://tfe-airgap-paul-filesbucket/${airgap_file} /tmp/
-  - aws s3 cp s3://tfe-airgap-paul-filesbucket/license.rli /tmp/
-  - aws s3 cp s3://tfe-airgap-paul-filesbucket/tfe_server.crt /tmp/
-  - aws s3 cp s3://tfe-airgap-paul-filesbucket/tfe_server.key /tmp/
+  - aws s3 cp s3://${environment_name}-filesbucket/license.rli /tmp/
+  - aws s3 cp s3://${environment_name}-filesbucket/tfe_server.crt /tmp/
+  - aws s3 cp s3://${environment_name}-filesbucket/tfe_server.key /tmp/
   - bash /tmp/install-tfe.sh

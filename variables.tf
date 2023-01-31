@@ -88,7 +88,7 @@ variable "admin_password" {
   type        = string
 }
 
-variable "airgap_file" {
-  description = "Name of the airgap file in folder files/"
-  type        = string
+variable "release_sequence" {
+  description = "Release number of the TFE version you wish to install."
+  type        = number
 }
