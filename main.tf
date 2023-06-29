@@ -57,7 +57,7 @@ resource "aws_subnet" "tfe_private" {
 # private subnet
 resource "aws_subnet" "tfe_private2" {
   vpc_id            = aws_vpc.tfe.id
-  cidr_block        = cidrsubnet("10.200.0.0/16", 8, 2)
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, 2)
   availability_zone = "${var.region}a"
 
   tags = {
