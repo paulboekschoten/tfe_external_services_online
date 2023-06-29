@@ -1,5 +1,6 @@
 region                  = "eu-west-3"              # AWS region to deploy in
 environment_name        = "tfe-airgap"             # Name of the environment, used in naming of resources
+owned_by                = "Your name"              # Used to populate the OwnedBy tag, to identify the owner.
 vpc_cidr                = "10.200.0.0/16"          # The ip range for the VPC, subnet CIDR are calculated based on this.
 route53_zone            = "example.com"            # The domain of your hosted zone in route 53.
 route53_subdomain       = "tfe-airgap"             # The subomain of the URL.

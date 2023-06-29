@@ -8,6 +8,12 @@ variable "environment_name" {
   description = "Name used to create and tag resources."
 }
 
+variable "owned_by" {
+  type        = string
+  description = "Used to populate the OwnedBy tag, to identify the owner."
+  default     = "Terraform"
+}
+
 variable "vpc_cidr" {
   type        = string
   description = "The IP range for the VPC in CIDR format."

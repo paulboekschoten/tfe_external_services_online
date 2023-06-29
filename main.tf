@@ -10,7 +10,7 @@ terraform {
     }
   }
 
-  required_version = "1.3.7"
+  required_version = ">=1.3.7"
 }
 
 provider "aws" {
@@ -27,27 +27,30 @@ resource "aws_vpc" "tfe" {
 
   tags = {
     Name = "${var.environment_name}-vpc"
+    OwnedBy = var.owned_by
   }
 }
 
 # public subnet
 resource "aws_subnet" "tfe_public" {
   vpc_id     = aws_vpc.tfe.id
-  cidr_block = cidrsubnet("10.200.0.0/16", 8, 0)
+  cidr_block = cidrsubnet(var.vpc_cidr, 8, 0)
 
   tags = {
     Name = "${var.environment_name}-subnet-public"
+    OwnedBy = var.owned_by
   }
 }
 
 # private subnet
 resource "aws_subnet" "tfe_private" {
   vpc_id            = aws_vpc.tfe.id
-  cidr_block        = cidrsubnet("10.200.0.0/16", 8, 1)
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, 1)
   availability_zone = "${var.region}c"
 
   tags = {
     Name = "${var.environment_name}-subnet-private"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -59,6 +62,7 @@ resource "aws_subnet" "tfe_private2" {
 
   tags = {
     Name = "${var.environment_name}-subnet-private2"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -68,6 +72,7 @@ resource "aws_internet_gateway" "tfe_igw" {
 
   tags = {
     Name = "${var.environment_name}-igw"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -82,6 +87,7 @@ resource "aws_default_route_table" "tfe" {
 
   tags = {
     Name = "${var.environment_name}-rtb"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -112,6 +118,7 @@ resource "aws_security_group" "tfe_sg" {
 
   tags = {
     Name = "${var.environment_name}-sg"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -218,6 +225,7 @@ resource "aws_instance" "tfe" {
 
   tags = {
     Name = "${var.environment_name}-tfe"
+    OwnedBy = var.owned_by
   }
 
   depends_on = [
@@ -235,6 +243,7 @@ resource "aws_eip" "eip_tfe" {
   vpc = true
   tags = {
     Name = "${var.environment_name}-eip"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -295,9 +304,11 @@ resource "aws_acm_certificate" "cert" {
 # s3 bucket
 resource "aws_s3_bucket" "tfe_files" {
   bucket = "${var.environment_name}-filesbucket"
+  force_destroy = true
 
   tags = {
     Name = "${var.environment_name}-filesbucket"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -335,9 +346,11 @@ resource "aws_s3_object" "private_key" {
 # s3 bucket
 resource "aws_s3_bucket" "tfe" {
   bucket = "${var.environment_name}-bucket"
+  force_destroy = true
 
   tags = {
     Name = "${var.environment_name}-bucket"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -376,6 +389,7 @@ resource "aws_iam_role" "tfe_s3_role" {
 
   tags = {
     tag-key = "${var.environment_name}-role"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -439,6 +453,7 @@ resource "aws_db_instance" "tfe" {
 
   tags = {
     Name = "${var.environment_name}-postgres"
+    OwnedBy = var.owned_by
   }
 }
 
@@ -449,5 +464,6 @@ resource "aws_db_subnet_group" "tfe" {
 
   tags = {
     Name = "${var.environment_name}-subnetgroup"
+    OwnedBy = var.owned_by
   }
 }
