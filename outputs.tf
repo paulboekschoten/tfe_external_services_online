@@ -4,7 +4,7 @@ output "public_ip" {
 
 output "ssh_login" {
   description = "SSH login command."
-  value       = "ssh -i tfesshkey.pem ubuntu@${local.fqdn}"
+  value       = "ssh -o IdentitiesOnly=yes -i tfesshkey.pem ubuntu@${local.fqdn}"
 }
 
 output "replicated_dashboard" {
