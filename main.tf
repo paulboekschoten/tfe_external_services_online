@@ -155,6 +155,27 @@ resource "aws_security_group_rule" "allow_replicated_inbound" {
   cidr_blocks = [local.all_ips]
 }
 
+#metrics inbound
+resource "aws_security_group_rule" "allow_http_metrics_inbound" {
+  type              = "ingress"
+  security_group_id = aws_security_group.tfe_sg.id
+
+  from_port   = 9090
+  to_port     = 9090
+  protocol    = local.tcp_protocol
+  cidr_blocks = [local.all_ips]
+}
+
+resource "aws_security_group_rule" "allow_https_metrics_inbound" {
+  type              = "ingress"
+  security_group_id = aws_security_group.tfe_sg.id
+
+  from_port   = 9091
+  to_port     = 9091
+  protocol    = local.tcp_protocol
+  cidr_blocks = [local.all_ips]
+}
+
 # sg rule postgresql local vpc inbound
 resource "aws_security_group_rule" "allow_postgresql_inbound_vpc" {
   type              = "ingress"
@@ -441,7 +462,7 @@ resource "aws_db_instance" "tfe" {
   allocated_storage   = 50
   db_name             = "tfe"
   engine              = "postgres"
-  engine_version      = "14.5"
+  engine_version      = "14.7"
   instance_class      = "db.m5.large"
   username            = "postgres"
   password            = var.postgresql_password
